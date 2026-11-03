@@ -14,7 +14,7 @@ import streamlit as st
 from src import PROJECT_ROOT
 from src.explain import global_importance
 from src.schema import FEATURE_LABELS
-from src.ui import apply_page_style
+from src.ui import apply_page_style, top_decile_stats
 
 apply_page_style()
 
@@ -22,9 +22,9 @@ apply_page_style()
 # PAGE HEADER
 # -----------------------------------------
 st.markdown("""
-<h2 style="margin-bottom:4px;">📊 Model Architecture & Test Evaluation</h2>
-<p style="color:#64748b; margin-top:0;">
-Rigorous held-out test set performance, error matrices, and global feature importance for the primary churn model
+<h2 style="margin-bottom:4px;">📊 Model Info & Test Results</h2>
+<p style="color:#94A3B8; margin-top:0;">
+Test results, risk cutoffs and feature importance for the churn model
 </p>
 """, unsafe_allow_html=True)
 
@@ -83,14 +83,13 @@ with col_decile:
     ">
         <h2 style="color: #15803D; margin: 0 0 4px 0;">{capture_rate:.2f}%</h2>
         <p style="color: #166534; margin: 0; font-size: 0.95rem;">
-            <b>{caught} out of {total}</b> test churners are successfully captured within the top 10% highest predicted risk cohort.
+            <b>{caught:,} out of {total:,}</b> test churners are in the 10% of customers with the highest scores.
         </p>
     </div>
     """, unsafe_allow_html=True)
-    flagged = int(np.ceil((metrics["test_support_0"] + metrics["test_support_1"]) * 0.10))
-    overall_rate = total / (metrics["test_support_0"] + metrics["test_support_1"]) * 100
+    flagged, flagged_rate, overall_rate = top_decile_stats(metrics)
     st.caption(
-        f"{caught / flagged * 100:.1f}% of the {flagged:,} flagged customers churned, against {overall_rate:.1f}% overall. "
+        f"{flagged_rate:.1f}% of the {flagged:,} flagged customers churned, against {overall_rate:.1f}% overall. "
         f"With about half of this sample churning, a top 10% list can catch at most {flagged / total * 100:.1f}% of churners."
     )
 
@@ -114,7 +113,7 @@ with col_cutoffs:
             <span style="color:#D97706; font-weight:600;">⚠️ Moderate Risk (Top 30% Cutoff):</span> &ge; <b>{th_mod:.3f}</b>
         </p>
         <p style="margin: 0;">
-            <span style="color:#059669; font-weight:600;">✅ Low Risk:</span> &lt; <b>{th_mod:.3f}</b>
+            <span style="color:#2563EB; font-weight:600;">🔵 Lower Priority:</span> &lt; <b>{th_mod:.3f}</b>
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -140,7 +139,7 @@ with cm_col:
         index=["Actual Retained (0)", "Actual Churned (1)"],
         columns=["Predicted Retained (0)", "Predicted Churned (1)"],
     )
-    st.dataframe(cm_df, use_container_width=True)
+    st.table(cm_df)
 
     st.caption(
         f"Evaluated on {tn + fp + fn + tp:,} holdout test samples: "
@@ -161,7 +160,6 @@ with fi_col:
         ax.barh(
             features[::-1],
             values[::-1],
-            color="#4F46E5",
         )
         ax.set_xlabel("Mean |SHAP value|", fontsize=9)
         ax.set_title("Top 8 Features by Mean |SHAP|", fontsize=10, weight="bold")
@@ -179,7 +177,7 @@ st.markdown("---")
 # -----------------------------------------
 # MODEL ARCHITECTURE & NOTES
 # -----------------------------------------
-st.markdown("### ⚙️ Production Model Architecture")
+st.markdown("### ⚙️ Model Details")
 
 st.markdown(f"""
 <div style="

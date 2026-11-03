@@ -15,7 +15,7 @@ apply_page_style()
 # -----------------------------------------
 st.markdown("""
 <h2 style="margin-bottom:4px;">Analytics Dashboard</h2>
-<p style="color:#64748b; margin-top:0;">
+<p style="color:#94A3B8; margin-top:0;">
 Customer base and churn patterns in the 100,000-customer dataset
 </p>
 """, unsafe_allow_html=True)
@@ -89,7 +89,7 @@ with col2:
     st.caption("Days since the current handset was issued")
 
     fig, ax = plt.subplots()
-    handset_age.plot(kind="bar", ax=ax)
+    handset_age.plot(kind="bar", ax=ax, rot=0)
     ax.set_ylabel("Churn Rate (%)")
     ax.set_xlabel("Handset Age (Days)")
     ax.grid(axis="y", alpha=0.3)
@@ -111,7 +111,7 @@ with col3:
     st.caption("Average monthly minutes of use")
 
     fig, ax = plt.subplots()
-    minutes.plot(kind="bar", ax=ax)
+    minutes.plot(kind="bar", ax=ax, rot=0)
     ax.set_ylabel("Churn Rate (%)")
     ax.set_xlabel("Average Monthly Minutes")
     ax.grid(axis="y", alpha=0.3)

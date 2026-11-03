@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Built**: SHAP explainability, FastAPI microservice, Docker containerization, GitHub Actions CI, MLflow experiment tracking, Evidently AI drift monitoring. **Planned**: public deployment, CSV upload and scoring, LLM retention recommendations (Claude API).
 
 ## Folder Structure & Purpose
-- `app.py` — Streamlit multipage app entry point (navigation shell)
+- `Home.py` — Streamlit multipage app entry point and landing page
 - `pages/` — Streamlit pages: 1_Dashboard.py, 2_Predict_Churn.py, 3_Insights.py, 4_Model_Info.py, 5_About.py, 6_Monitoring.py
 - `src/` — Reusable logic:
   - `preprocess.py` (data loading, stratified split, ColumnTransformer feature engineering)
@@ -47,7 +47,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - sqlalchemy<2.1.0
 
 ## Common Commands
-- **Run Streamlit**: `streamlit run app.py`
+- **Run Streamlit**: `streamlit run Home.py`
 - **Train production model**: `python -m src.train`
 - **Run benchmark experiments**: `python -m src.experiments`
 - **Open MLflow UI**: `mlflow ui --backend-store-uri sqlite:///mlflow.db`
