@@ -189,12 +189,12 @@ with result_col:
             colors = ["#DC2626" if r["direction"] == "increases_risk" else "#059669" for r in reasons]
 
             fig, ax = plt.subplots(figsize=(5, 4.5))
-            y_pos = np.arange(len(features))[::-1]  # reverse for top-to-bottom
-            ax.barh(y_pos, shap_vals[::-1], color=colors[::-1], height=0.6)
+            y_pos = np.arange(len(features))[::-1]  # reasons are sorted, so the biggest goes at the top
+            ax.barh(y_pos, shap_vals, color=colors, height=0.6)
             ax.set_yticks(y_pos)
-            ax.set_yticklabels(features[::-1], fontsize=11)
+            ax.set_yticklabels(features, fontsize=11)
             ax.axvline(x=0, color="#94A3B8", linewidth=0.8)
-            ax.set_xlabel("SHAP value (log-odds impact on risk score)", fontsize=11)
+            ax.set_xlabel("Impact on score (log-odds)", fontsize=11)
             ax.set_title("What moved this score", fontsize=13, weight="bold")
             ax.grid(axis="x", linestyle="--", alpha=0.4)
             plt.tight_layout()
