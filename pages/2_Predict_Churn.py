@@ -14,7 +14,16 @@ from src import PROJECT_ROOT
 from src.predict import load_artifacts, predict_churn
 from src.explain import explain_customer
 from src.ui import apply_page_style
-from src.schema import ASL_FLAG_HELP, ASL_FLAG_LABEL, AslFlag, FEATURE_LABELS, FIELD_GROUPS, NUMERIC_FIELDS
+from src.schema import (
+    ASL_FLAG_HELP,
+    ASL_FLAG_LABEL,
+    AslFlag,
+    EXAMPLE_HIGH_RISK,
+    EXAMPLE_LOW_RISK,
+    FEATURE_LABELS,
+    FIELD_GROUPS,
+    NUMERIC_FIELDS,
+)
 
 apply_page_style()
 
@@ -50,12 +59,32 @@ metrics = get_metrics_config()
 threshold_high = metrics["threshold_high_risk"]
 threshold_moderate = metrics["threshold_moderate_risk"]
 
+
+def load_example(customer):
+    for name, value in customer.items():
+        st.session_state[name] = value
+
+
+# Defaults live in session state so the example buttons can replace them
+for name, spec in NUMERIC_FIELDS.items():
+    st.session_state.setdefault(name, spec["default"])
+st.session_state.setdefault("asl_flag", "N")
+
 # -----------------------------------------
 # INPUT FORM (LEFT) + RESULT (RIGHT)
 # -----------------------------------------
 input_col, result_col = st.columns([1.2, 0.8], gap="large")
 
 with input_col:
+    st.markdown("**Not sure what to enter? Start from an example:**")
+    high_col, low_col = st.columns(2)
+    try_high = high_col.button(
+        "🚨 Try a high-risk customer", on_click=load_example, args=(EXAMPLE_HIGH_RISK,), use_container_width=True
+    )
+    try_low = low_col.button(
+        "🔵 Try a lower-priority customer", on_click=load_example, args=(EXAMPLE_LOW_RISK,), use_container_width=True
+    )
+
     with st.form("prediction_form"):
         st.markdown("### 📋 Customer Profile")
 
@@ -69,15 +98,16 @@ with input_col:
                     spec["label"],
                     min_value=spec["min"],
                     max_value=spec["max"],
-                    value=spec["default"],
                     step=spec["step"],
                     help=spec["help"],
+                    key=name,
                 )
 
         raw_customer_dict["asl_flag"] = st.selectbox(
             ASL_FLAG_LABEL,
             list(AslFlag.__args__),  # type: ignore
             help=ASL_FLAG_HELP,
+            key="asl_flag",
         )
 
         st.markdown("<br>", unsafe_allow_html=True)
@@ -89,7 +119,7 @@ with input_col:
 with result_col:
     st.markdown("### 📊 Prediction Assessment")
 
-    if submitted:
+    if submitted or try_high or try_low:
         churn_prob = predict_churn(
             raw_customer_dict,
             model=model,
@@ -110,11 +140,12 @@ with result_col:
             border_color = "#FCD34D"
             status_icon = "⚠️"
         else:
-            risk_tier = "Low Risk"
-            badge_color = "#059669"
-            bg_color = "#ECFDF5"
-            border_color = "#6EE7B7"
-            status_icon = "✅"
+            # Not "Low Risk": customers just below this cutoff still churn about half the time
+            risk_tier = "Lower Priority"
+            badge_color = "#2563EB"
+            bg_color = "#EFF6FF"
+            border_color = "#BFDBFE"
+            status_icon = "🔵"
 
         st.markdown(f"""
         <div style="

@@ -113,7 +113,7 @@ with col_cutoffs:
             <span style="color:#D97706; font-weight:600;">⚠️ Moderate Risk (Top 30% Cutoff):</span> &ge; <b>{th_mod:.3f}</b>
         </p>
         <p style="margin: 0;">
-            <span style="color:#059669; font-weight:600;">✅ Low Risk:</span> &lt; <b>{th_mod:.3f}</b>
+            <span style="color:#2563EB; font-weight:600;">🔵 Lower Priority:</span> &lt; <b>{th_mod:.3f}</b>
         </p>
     </div>
     """, unsafe_allow_html=True)

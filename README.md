@@ -60,7 +60,7 @@ Each variant used the same 15 columns and the same split.
 
 ### Risk tiers
 
-Tiers come from the test-set score distribution: **High** is the top 10% (score ≥ 0.697), **Moderate** is the top 30% (score ≥ 0.584), and the rest are **Low**.
+Tiers come from the test-set score distribution: **High** is the top 10% (score ≥ 0.697), **Moderate** is the top 30% (score ≥ 0.584), and the rest are **Low**, shown in the app as **Lower Priority** because customers just below the cutoff still churn about half the time.
 
 ---
 

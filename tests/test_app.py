@@ -16,6 +16,10 @@ def default_timeout():
     return 30
 
 
+def _submit(at):
+    next(b for b in at.button if b.label.endswith("Predict Churn Risk")).click().run()
+
+
 def test_app_shell_loads(default_timeout):
     """Verifies that the landing page loads and shows the measured results."""
     at = AppTest.from_file("Home.py", default_timeout=default_timeout).run()
@@ -45,8 +49,7 @@ def test_predict_churn_page_loads_and_submits(default_timeout):
     assert not at.exception, f"Predict page failed to load: {at.exception}"
 
     # Click the form submission button with defaults
-    assert len(at.button) > 0, "No submit button found on Predict Churn page"
-    at.button[0].click().run()
+    _submit(at)
 
     assert not at.exception, f"Predict page raised exception on submit: {at.exception}"
 
@@ -57,7 +60,7 @@ def test_predict_churn_page_loads_and_submits(default_timeout):
     )
 
 
-@pytest.mark.parametrize("customer, expected", [(EXAMPLE_HIGH_RISK, "High Risk"), (EXAMPLE_LOW_RISK, "Low Risk")])
+@pytest.mark.parametrize("customer, expected", [(EXAMPLE_HIGH_RISK, "High Risk"), (EXAMPLE_LOW_RISK, "Lower Priority")])
 def test_predict_form_uses_the_entered_values(default_timeout, customer, expected):
     """Values typed into every field must reach the model and change the result."""
     at = AppTest.from_file("pages/2_Predict_Churn.py", default_timeout=default_timeout).run()
@@ -66,16 +69,33 @@ def test_predict_form_uses_the_entered_values(default_timeout, customer, expecte
     for name, spec in NUMERIC_FIELDS.items():
         inputs[spec["label"]].set_value(customer[name])
     at.selectbox[0].set_value(customer["asl_flag"])
-    at.button[0].click().run()
+    _submit(at)
 
     assert not at.exception, f"Predict page raised exception on submit: {at.exception}"
     assert expected in " ".join(m.value for m in at.markdown)
 
 
+@pytest.mark.parametrize("label, customer, expected", [
+    ("high-risk", EXAMPLE_HIGH_RISK, "High Risk"),
+    ("lower-priority", EXAMPLE_LOW_RISK, "Lower Priority"),
+])
+def test_example_buttons_fill_the_form_and_score_it(default_timeout, label, customer, expected):
+    """One click must show a recruiter a full result, with the form showing the values used."""
+    at = AppTest.from_file("pages/2_Predict_Churn.py", default_timeout=default_timeout).run()
+    next(b for b in at.button if label in b.label).click().run()
+
+    assert not at.exception, f"Example button raised exception: {at.exception}"
+    assert expected in " ".join(m.value for m in at.markdown)
+    fields = {n.label: n.value for n in at.number_input}
+    for name, spec in NUMERIC_FIELDS.items():
+        assert fields[spec["label"]] == customer[name], name
+    assert at.selectbox[0].value == customer["asl_flag"]
+
+
 def test_predict_does_not_show_score_as_percent(default_timeout):
     """Scores are uncalibrated, so they must not read like a percent chance of churning."""
     at = AppTest.from_file("pages/2_Predict_Churn.py", default_timeout=default_timeout).run()
-    at.button[0].click().run()
+    _submit(at)
 
     assert not at.exception, f"Predict page raised exception on submit: {at.exception}"
     text_content = " ".join(m.value for m in at.markdown)
@@ -96,18 +116,18 @@ def test_model_info_page_loads(default_timeout):
 
 
 def test_monitoring_page_separates_healthy_data_from_drift():
-    """With no log it asks for more data; the healthy baseline passes and simulated drift alerts."""
+    """It opens on the healthy baseline, simulated drift alerts, and an empty log asks for more data."""
     at = AppTest.from_file("pages/6_Monitoring.py", default_timeout=120).run()
     assert not at.exception, f"Monitoring page failed to load: {at.exception}"
-    assert len(at.info) == 1 and not at.error
-
-    at.radio[0].set_value("Held-out test set (healthy baseline)").run()
-    assert not at.exception, f"Monitoring page raised exception: {at.exception}"
     assert len(at.success) == 1 and not at.error
 
     at.radio[0].set_value("Simulated drift (demo)").run()
     assert not at.exception, f"Monitoring page raised exception: {at.exception}"
     assert len(at.error) == 1 and "mou_Mean" in at.error[0].value
+
+    at.radio[0].set_value("Logged predictions").run()
+    assert not at.exception, f"Monitoring page raised exception: {at.exception}"
+    assert len(at.info) == 1 and not at.error
 
 
 def test_about_page_loads(default_timeout):

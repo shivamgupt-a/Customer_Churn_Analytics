@@ -52,7 +52,7 @@ def run_check(source):
     return summary, snapshot.get_html_str(as_iframe=False)
 
 
-source = st.radio("Data to check against the training data", [LOGGED, HEALTHY, SIMULATED], horizontal=True)
+source = st.radio("Data to check against the training data", [HEALTHY, SIMULATED, LOGGED], horizontal=True)
 
 if source == SIMULATED:
     st.caption("Demo data: the held-out test set with handset age and minutes shifted on purpose. This is not real traffic.")
@@ -61,7 +61,10 @@ with st.spinner("Checking for drift..."):
     summary, report_html = run_check(source)
 
 if summary is None:
-    st.info(f"Needs at least {MIN_RECORDS} logged API predictions to give a reliable result. Fewer rows cause false alarms.")
+    st.info(
+        f"Needs at least {MIN_RECORDS} predictions made through the API to give a reliable result. "
+        "Fewer rows cause false alarms."
+    )
     st.stop()
 
 # -----------------------------------------
