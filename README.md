@@ -1,6 +1,6 @@
 # 📊 Customer Churn Analytics
 
-[![CI](https://github.com/Manavshah1710/Customer_Churn_Analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/Manavshah1710/Customer_Churn_Analytics/actions/workflows/ci.yml)
+[![CI](https://github.com/shivamgupt-a/Customer_Churn_Analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/shivamgupt-a/Customer_Churn_Analytics/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.32.0-FF4B4B.svg?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Scikit-Learn](https://img.shields.io/badge/scikit--learn-1.4.2-F7931E.svg?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
@@ -136,7 +136,7 @@ Raw CSV (100,000 rows) --> src/data_ingest.py --> SQLite (data/churn.db)
 Requires **Python 3.12**. The pinned versions match the saved model.
 
 ```bash
-git clone https://github.com/Manavshah1710/Customer_Churn_Analytics.git
+git clone https://github.com/shivamgupt-a/Customer_Churn_Analytics.git
 cd Customer_Churn_Analytics
 
 # Windows (PowerShell)
