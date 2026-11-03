@@ -14,7 +14,7 @@ import streamlit as st
 from src import PROJECT_ROOT
 from src.explain import global_importance
 from src.schema import FEATURE_LABELS
-from src.ui import apply_page_style
+from src.ui import apply_page_style, top_decile_stats
 
 apply_page_style()
 
@@ -87,10 +87,9 @@ with col_decile:
         </p>
     </div>
     """, unsafe_allow_html=True)
-    flagged = int(np.ceil((metrics["test_support_0"] + metrics["test_support_1"]) * 0.10))
-    overall_rate = total / (metrics["test_support_0"] + metrics["test_support_1"]) * 100
+    flagged, flagged_rate, overall_rate = top_decile_stats(metrics)
     st.caption(
-        f"{caught / flagged * 100:.1f}% of the {flagged:,} flagged customers churned, against {overall_rate:.1f}% overall. "
+        f"{flagged_rate:.1f}% of the {flagged:,} flagged customers churned, against {overall_rate:.1f}% overall. "
         f"With about half of this sample churning, a top 10% list can catch at most {flagged / total * 100:.1f}% of churners."
     )
 

@@ -17,9 +17,15 @@ def default_timeout():
 
 
 def test_app_shell_loads(default_timeout):
-    """Verifies that the main application shell (app.py) loads without exceptions."""
-    at = AppTest.from_file("app.py", default_timeout=default_timeout).run()
-    assert not at.exception, f"app.py raised exception: {at.exception}"
+    """Verifies that the landing page loads and shows the measured results."""
+    at = AppTest.from_file("Home.py", default_timeout=default_timeout).run()
+    assert not at.exception, f"Home.py raised exception: {at.exception}"
+
+    results = {m.label: m.value for m in at.metric}
+    assert results["Test AUC"] == "0.683"
+    assert results["Top 10% Who Churned"] == "77.5%"
+    assert results["Churn Across All Customers"] == "49.6%"
+    assert results["Model Inputs"] == "15"
 
 
 def test_dashboard_page_loads(default_timeout):

@@ -155,7 +155,7 @@ Install through `requirements.txt`. Installing Evidently on its own upgrades pro
 
 | Task | Command |
 | :--- | :--- |
-| Run the app | `streamlit run app.py` |
+| Run the app | `streamlit run Home.py` |
 | Run the API | `uvicorn api.main:app --reload` |
 | Run the tests | `python -m pytest` |
 | Compare models | `python -m src.experiments` |
@@ -169,7 +169,7 @@ Install through `requirements.txt`. Installing Evidently on its own upgrades pro
 ## 📂 Project Structure
 
 ```
-├── app.py                 # Streamlit entry point
+├── Home.py                # Streamlit entry point and landing page
 ├── api/                   # FastAPI service and request/response schemas
 ├── pages/                 # Dashboard, Predict Churn, Insights, Model Info, About, Monitoring
 ├── src/

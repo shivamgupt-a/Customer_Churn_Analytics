@@ -2,20 +2,32 @@
 Shared page setup for the Streamlit app.
 """
 
+from typing import Any, Dict, Tuple
+
+import numpy as np
 import streamlit as st
+
+
+def top_decile_stats(metrics: Dict[str, Any]) -> Tuple[int, float, float]:
+    """Returns customers flagged in the top 10%, the % of them who churned, and the % churned overall."""
+    test_customers = metrics["test_support_0"] + metrics["test_support_1"]
+    flagged = int(np.ceil(test_customers * 0.10))
+    flagged_rate = metrics["churners_caught_in_top_10"] / flagged * 100
+    overall_rate = metrics["total_churners_in_test"] / test_customers * 100
+    return flagged, flagged_rate, overall_rate
 
 
 def apply_page_style() -> None:
     """
     Sets page config and shared CSS. Call first on every page:
-    Streamlit runs only the selected page's script, never app.py as well.
+    Streamlit runs only the selected page's script, never Home.py as well.
     Colors come from the theme in .streamlit/config.toml.
     """
     st.set_page_config(
         page_title="Customer Churn Analytics",
         page_icon="📊",
         layout="wide",
-        initial_sidebar_state="expanded",
+        initial_sidebar_state="auto",  # expanded would cover the whole page on phones
     )
     st.markdown(
         """
