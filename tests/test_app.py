@@ -37,6 +37,10 @@ def test_dashboard_page_loads(default_timeout):
     at = AppTest.from_file("pages/1_Dashboard.py", default_timeout=default_timeout).run()
     assert not at.exception, f"Dashboard page raised exception: {at.exception}"
 
+    assert {m.label: m.value for m in at.metric}["Churn in sample"] == "49.6%"
+    text_content = " ".join(m.value for m in at.markdown)
+    assert "of customers at month 11 churned, up from 29% at month 9." in text_content
+
 
 def test_predict_churn_page_loads_and_submits(default_timeout):
     """

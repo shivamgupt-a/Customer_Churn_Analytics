@@ -96,7 +96,7 @@ These are associations in this dataset, not proof of cause.
 
 ## ✨ Features
 
-1. **Dashboard:** customer KPIs and churn by tenure, handset age, usage and change in usage.
+1. **Dashboard:** customer KPIs, then interactive churn charts by tenure, handset age, usage and change in usage, each with a table view.
 2. **Predict Churn:** a 15-field form that returns a risk score, a risk tier and a SHAP chart of the top drivers.
 3. **Insights:** the findings above, calculated from the data each time the page loads.
 4. **Model Info:** held-out metrics, risk cutoffs, the confusion matrix and SHAP feature importance.
@@ -179,6 +179,7 @@ Install through `requirements.txt`. Installing Evidently on its own upgrades pro
 │   ├── train.py           # Training, evaluation, MLflow, promotion
 │   ├── experiments.py     # Cross-validated model comparison
 │   ├── predict.py         # Cached model loading and scoring
+│   ├── charts.py          # Interactive Altair charts for the analytics pages
 │   ├── explain.py         # SHAP explanations
 │   ├── prediction_log.py  # Stores each API prediction
 │   ├── monitoring.py      # Evidently drift check and alert rule

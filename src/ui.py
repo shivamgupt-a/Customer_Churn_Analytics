@@ -20,7 +20,7 @@ CHART_STYLE = {
     "xtick.color": "#CBD5E1",
     "ytick.color": "#CBD5E1",
     "grid.color": "#334155",
-    "axes.prop_cycle": cycler(color=["#64FFDA"]),
+    "axes.prop_cycle": cycler(color=["#3987e5"]),
 }
 
 
@@ -49,6 +49,35 @@ def apply_page_style() -> None:
     st.markdown(
         """
         <style>
+        [data-testid="stMetric"] {
+            padding: 14px 18px;
+            border: 1px solid rgba(250, 250, 250, 0.2);
+            border-radius: 8px;
+        }
+        .hero-block {
+            padding: 12px 0;
+        }
+        .hero-eyebrow {
+            color: #94A3B8;
+            font-size: 0.85rem;
+        }
+        .hero-figure {
+            color: #FFFFFF;
+            font-size: 4.5rem;
+            font-weight: 600;
+            line-height: 1.15;
+        }
+        .hero-text {
+            color: #E2E8F0;
+            font-size: 1.05rem;
+            line-height: 1.45;
+            margin-bottom: 12px;
+        }
+        .hero-note {
+            color: #94A3B8;
+            font-size: 0.85rem;
+            line-height: 1.45;
+        }
         .soft-card, .section-card {
             padding: 16px 20px;
             border-radius: 14px;

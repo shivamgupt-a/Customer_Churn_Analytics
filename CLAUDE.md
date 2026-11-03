@@ -18,10 +18,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `predict.py` (cached artifact loader, predict_churn inference)
   - `data_ingest.py` (loads the CSV into SQLite)
   - `ui.py` (`apply_page_style()`: page config and CSS, call first on every page)
+  - `charts.py` (interactive Altair charts for the analytics pages)
   - `prediction_log.py` (appends each `/predict` call to `data/predictions.db`; set `PREDICTION_LOG_PATH` to move it)
   - `monitoring.py` (Evidently drift check against the training data; alert rule and CLI)
 - `models/` — ML artifacts: `churn_model.pkl`, `preprocessor.pkl` (ColumnTransformer), `metrics.json`
-- `tests/` — Test suite: `test_pipeline.py` (unit/leakage tests), `test_predict.py` (inference), `test_app.py` (Streamlit AppTest), `test_mlflow.py` (MLflow tracking & registry), `test_monitoring.py` (drift check and log reader)
+- `tests/` — Test suite: `test_pipeline.py` (unit/leakage tests), `test_predict.py` (inference), `test_app.py` (Streamlit AppTest), `test_mlflow.py` (MLflow tracking & registry), `test_monitoring.py` (drift check and log reader), `test_charts.py` (chart data and highlights)
 - `data/` — SQLite DB (`churn.db`), raw CSV in `data/raw/`
 - `notebooks/` — EDA (`01_EDA.ipynb`), model training (`02_Model_Training.ipynb`)
 - `docs/` — `project_definition.md` (business context)
@@ -38,6 +39,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - pytest==9.1.1
 - mlflow==2.14.3
 - evidently==0.7.23
+- altair==5.5.0
 - shap==0.46.0
 - fastapi==0.162.0
 - uvicorn==0.54.0
