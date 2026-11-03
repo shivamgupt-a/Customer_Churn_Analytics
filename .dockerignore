@@ -1,0 +1,15 @@
+.git
+.github
+.venv
+.env
+.claude
+data
+docs
+mlruns
+mlartifacts
+mlflow.db
+models/archive*
+notebooks
+pages
+tests
+**/__pycache__

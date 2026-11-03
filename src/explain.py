@@ -1,0 +1,242 @@
+"""
+SHAP explainability module for Customer Churn Analytics.
+
+Provides grouped per-customer explanations and global feature importance.
+Explainer is built lazily on first use (never at import time).
+"""
+
+import json
+import sys
+from pathlib import Path
+from functools import lru_cache
+from typing import Any, Dict, List
+
+import numpy as np
+import pandas as pd
+
+# Ensure project root is in sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.predict import load_artifacts
+from src.preprocess import load_data, split_data, transform_new
+from src.schema import EXAMPLE_HIGH_RISK, EXAMPLE_LOW_RISK, MODEL_FEATURES
+
+
+def _get_raw_feature_value(raw_input: Dict[str, Any], feature: str) -> Any:
+    """Extract raw value for a feature from input dict."""
+    return raw_input.get(feature, None)
+
+
+def _sum_shap_by_raw_feature(
+    shap_values: np.ndarray,
+    feature_names: List[str],
+    raw_input: Dict[str, Any]
+) -> List[Dict[str, Any]]:
+    """
+    Sum one-hot dummy SHAP values into their raw feature.
+    Returns list of dicts with raw feature name, customer value, summed SHAP, direction.
+    """
+    # Map transformed feature -> raw feature
+    raw_to_shap = {feat: 0.0 for feat in MODEL_FEATURES}
+    raw_to_dummy_count = {feat: 0 for feat in MODEL_FEATURES}
+
+    for i, fname in enumerate(feature_names):
+        if fname.startswith("num__"):
+            raw_name = fname[5:]
+            if raw_name in raw_to_shap:
+                raw_to_shap[raw_name] += shap_values[i]
+                raw_to_dummy_count[raw_name] += 1
+        elif fname.startswith("bin__"):
+            raw_name = fname[5:]
+            if raw_name in raw_to_shap:
+                raw_to_shap[raw_name] += shap_values[i]
+                raw_to_dummy_count[raw_name] += 1
+        elif fname.startswith("cat__"):
+            suffix = fname[5:]
+            best_match = None
+            best_len = 0
+            for raw in MODEL_FEATURES:
+                if suffix.startswith(raw + "_") and len(raw) > best_len:
+                    best_len = len(raw)
+                    best_match = raw
+            if best_match:
+                raw_to_shap[best_match] += shap_values[i]
+                raw_to_dummy_count[best_match] += 1
+
+    # Build reasons list
+    reasons = []
+    for raw_feat in MODEL_FEATURES:
+        shap_sum = raw_to_shap[raw_feat]
+        if raw_to_dummy_count[raw_feat] > 0:
+            reasons.append({
+                "feature": raw_feat,
+                "customer_value": _get_raw_feature_value(raw_input, raw_feat),
+                "shap_value": float(shap_sum),
+                "direction": "increases_risk" if shap_sum > 0 else "decreases_risk"
+            })
+
+    # Sort by absolute SHAP value descending
+    reasons.sort(key=lambda x: abs(x["shap_value"]), reverse=True)
+    return reasons
+
+
+@lru_cache(maxsize=1)
+def get_explainer():
+    """
+    Lazily build and cache the SHAP TreeExplainer.
+    Never runs at import time.
+    """
+    import shap
+
+    model, preprocessor = load_artifacts(str(PROJECT_ROOT / "models"))
+    return shap.TreeExplainer(model)
+
+
+@lru_cache(maxsize=1)
+def _load_risk_thresholds():
+    """Cached like the model, so a running app never mixes old model with new thresholds."""
+    with open(PROJECT_ROOT / "models" / "metrics.json", "r") as f:
+        metrics = json.load(f)
+    return metrics["threshold_high_risk"], metrics["threshold_moderate_risk"]
+
+
+def explain_customer(raw_input: Dict[str, Any], top_k: int = 5) -> Dict[str, Any]:
+    """
+    Generate a grouped SHAP explanation for a single customer.
+
+    Args:
+        raw_input: Dict with the raw values of MODEL_FEATURES
+        top_k: Number of top reasons to return (default 5)
+
+    Returns:
+        Dict with keys: probability, base_value, risk_level, reasons[].
+        base_value and shap_value are in log-odds: sigmoid(base_value + all shap values) == probability.
+    """
+    model, preprocessor = load_artifacts(str(PROJECT_ROOT / "models"))
+    artifacts = preprocessor
+
+    threshold_high, threshold_moderate = _load_risk_thresholds()
+
+    # Transform input
+    input_df = pd.DataFrame([raw_input])
+    input_proc = transform_new(input_df, artifacts)
+
+    # Get model probability
+    prob = float(model.predict_proba(input_proc)[0, 1])
+
+    # Get SHAP values (lazy explainer)
+    explainer = get_explainer()
+    shap_class1 = explainer.shap_values(input_proc)[0]
+    base_value = float(np.ravel(explainer.expected_value)[0])
+
+    feature_names = artifacts["preprocessor"].get_feature_names_out().tolist()
+
+    # Sum dummies into raw features
+    reasons = _sum_shap_by_raw_feature(shap_class1, feature_names, raw_input)
+
+    # Determine risk level
+    if prob >= threshold_high:
+        risk_level = "high"
+    elif prob >= threshold_moderate:
+        risk_level = "moderate"
+    else:
+        risk_level = "low"
+
+    return {
+        "probability": prob,
+        "base_value": base_value,
+        "risk_level": risk_level,
+        "reasons": reasons[:top_k]
+    }
+
+
+def global_importance(sample_size: int = 300) -> List[Dict[str, Any]]:
+    """
+    Compute global feature importance as mean |SHAP| over a sample.
+
+    Returns list of dicts with raw feature name and mean_abs_shap, sorted descending.
+    """
+    model, preprocessor = load_artifacts(str(PROJECT_ROOT / "models"))
+    artifacts = preprocessor
+
+    df = load_data(str(PROJECT_ROOT / "data" / "churn.db"))
+    _, X_test, _, _ = split_data(df, target_col="churn", test_size=0.2, random_state=42)
+    X_test_proc = transform_new(X_test, artifacts)
+
+    # Sample
+    n = min(sample_size, len(X_test_proc))
+    rng = np.random.default_rng(42)
+    sample_idx = rng.choice(len(X_test_proc), n, replace=False)
+    X_sample = X_test_proc.iloc[sample_idx]
+
+    explainer = get_explainer()
+    shap_class1 = explainer.shap_values(X_sample)
+
+    feature_names = artifacts["preprocessor"].get_feature_names_out().tolist()
+
+    # Sum dummies into raw features for each sample, then average
+    raw_shap_sums = {feat: [] for feat in MODEL_FEATURES}
+
+    for i in range(shap_class1.shape[0]):
+        reasons = _sum_shap_by_raw_feature(shap_class1[i], feature_names, {})
+        for r in reasons:
+            raw_shap_sums[r["feature"]].append(abs(r["shap_value"]))
+
+    # Mean |SHAP| per raw feature
+    global_imp = []
+    for feat, vals in raw_shap_sums.items():
+        if vals:
+            global_imp.append({
+                "feature": feat,
+                "mean_abs_shap": float(np.mean(vals))
+            })
+
+    global_imp.sort(key=lambda x: x["mean_abs_shap"], reverse=True)
+    return global_imp
+
+
+# Self-check when run directly
+if __name__ == "__main__":
+    import time
+
+    # Test import time
+    import_start = time.perf_counter()
+    import shap  # noqa: F401 - imported only to time it
+    import_time = time.perf_counter() - import_start
+    print(f"import shap: {import_time*1000:.1f}ms")
+
+    # Test explainer build
+    build_start = time.perf_counter()
+    explainer = get_explainer()
+    build_time = time.perf_counter() - build_start
+    print(f"explainer build: {build_time*1000:.1f}ms")
+
+    # Test customers
+    customer_a = EXAMPLE_HIGH_RISK
+    customer_b = EXAMPLE_LOW_RISK
+
+    # Cold call
+    cold_start = time.perf_counter()
+    exp_a = explain_customer(customer_a)
+    cold_time = time.perf_counter() - cold_start
+
+    # Warm call
+    warm_start = time.perf_counter()
+    exp_b = explain_customer(customer_b)
+    warm_time = time.perf_counter() - warm_start
+
+    print(f"cold explain_customer: {cold_time*1000:.1f}ms")
+    print(f"warm explain_customer: {warm_time*1000:.1f}ms")
+
+    print("\nCustomer A (high risk):")
+    print(json.dumps(exp_a, indent=2))
+    print("\nCustomer B (low risk):")
+    print(json.dumps(exp_b, indent=2))
+
+    # Global
+    glob = global_importance(300)
+    print("\nTop 8 global features (mean |SHAP|):")
+    for g in glob[:8]:
+        print(f"  {g['feature']}: {g['mean_abs_shap']:.4f}")

@@ -1,0 +1,28 @@
+{
+    "auc": 0.6833,
+    "precision": 0.6225,
+    "recall": 0.633,
+    "f1": 0.6277,
+    "accuracy": 0.6279,
+    "confusion_matrix": [
+        [
+            6283,
+            3805
+        ],
+        [
+            3638,
+            6274
+        ]
+    ],
+    "top_10_decile_capture_rate": 15.63,
+    "churners_caught_in_top_10": 1549,
+    "total_churners_in_test": 9912,
+    "test_support_0": 10088,
+    "test_support_1": 9912,
+    "threshold_high_risk": 0.6972,
+    "threshold_moderate_risk": 0.5836,
+    "model_type": "hist_gradient_boosting",
+    "n_estimators": 300,
+    "max_depth": 6,
+    "learning_rate": 0.05
+}
