@@ -4,8 +4,24 @@ Shared page setup for the Streamlit app.
 
 from typing import Any, Dict, Tuple
 
+import matplotlib as mpl
 import numpy as np
 import streamlit as st
+from cycler import cycler
+
+CHART_STYLE = {
+    "figure.facecolor": "#0A192F",
+    "savefig.facecolor": "#0A192F",
+    "axes.facecolor": "#0A192F",
+    "axes.edgecolor": "#475569",
+    "axes.labelcolor": "#CBD5E1",
+    "axes.titlecolor": "#E2E8F0",
+    "text.color": "#E2E8F0",
+    "xtick.color": "#CBD5E1",
+    "ytick.color": "#CBD5E1",
+    "grid.color": "#334155",
+    "axes.prop_cycle": cycler(color=["#64FFDA"]),
+}
 
 
 def top_decile_stats(metrics: Dict[str, Any]) -> Tuple[int, float, float]:
@@ -23,6 +39,7 @@ def apply_page_style() -> None:
     Streamlit runs only the selected page's script, never Home.py as well.
     Colors come from the theme in .streamlit/config.toml.
     """
+    mpl.rcParams.update(CHART_STYLE)
     st.set_page_config(
         page_title="Customer Churn Analytics",
         page_icon="📊",

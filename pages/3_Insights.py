@@ -15,7 +15,7 @@ apply_page_style()
 # -----------------------------------------
 st.markdown("""
 <h2 style="margin-bottom:4px;">Customer Insights</h2>
-<p style="color:#64748b; margin-top:0;">
+<p style="color:#94A3B8; margin-top:0;">
 Patterns measured in this dataset. They show association, not proof of cause.
 </p>
 """, unsafe_allow_html=True)
@@ -42,6 +42,7 @@ fig, ax = plt.subplots(figsize=(9, 3.5))
 first_two_years.plot(kind="line", marker="o", ax=ax)
 ax.set_ylabel("Churn Rate (%)")
 ax.set_xlabel("Tenure (Months)")
+ax.set_xticks(range(6, 25, 2))
 ax.grid(alpha=0.3)
 st.pyplot(fig)
 plt.close(fig)
@@ -75,7 +76,7 @@ handset_price = churn_rate_by_band(
 
 with col1:
     fig, ax = plt.subplots()
-    handset_age.plot(kind="bar", ax=ax)
+    handset_age.plot(kind="bar", ax=ax, rot=0)
     ax.set_ylabel("Churn Rate (%)")
     ax.set_xlabel("Handset Age (Days)")
     ax.set_title("Churn by Handset Age")
@@ -85,7 +86,7 @@ with col1:
 
 with col2:
     fig, ax = plt.subplots()
-    handset_price.plot(kind="bar", ax=ax)
+    handset_price.plot(kind="bar", ax=ax, rot=0)
     ax.set_ylabel("Churn Rate (%)")
     ax.set_xlabel("Handset Price")
     ax.set_title("Churn by Handset Price")
@@ -117,7 +118,7 @@ spending_limit = df.groupby("asl_flag")["churn"].mean() * 100
 
 with col3:
     fig, ax = plt.subplots()
-    dropped_calls.plot(kind="bar", ax=ax)
+    dropped_calls.plot(kind="bar", ax=ax, rot=0)
     ax.set_ylabel("Churn Rate (%)")
     ax.set_xlabel("Dropped Calls per Month")
     ax.set_title("Churn by Dropped Calls")
@@ -128,7 +129,7 @@ with col3:
 
 with col4:
     fig, ax = plt.subplots()
-    spending_limit.rename({"N": "No limit", "Y": "Has limit"}).plot(kind="bar", ax=ax)
+    spending_limit.rename({"N": "No limit", "Y": "Has limit"}).plot(kind="bar", ax=ax, rot=0)
     ax.set_ylabel("Churn Rate (%)")
     ax.set_xlabel("Account Spending Limit")
     ax.set_title("Churn by Spending Limit")

@@ -32,7 +32,7 @@ apply_page_style()
 # -----------------------------------------
 st.markdown("""
 <h2 style="margin-bottom:4px;">🔮 Predict Customer Churn</h2>
-<p style="color:#64748b; margin-top:0;">
+<p style="color:#94A3B8; margin-top:0;">
 Estimate customer churn risk in real time using the gradient boosting model
 </p>
 """, unsafe_allow_html=True)
@@ -70,21 +70,22 @@ for name, spec in NUMERIC_FIELDS.items():
     st.session_state.setdefault(name, spec["default"])
 st.session_state.setdefault("asl_flag", "N")
 
+st.markdown("**Not sure what to enter? Start from an example:**")
+high_col, low_col = st.columns(2)
+try_high = high_col.button(
+    "🚨 Try a high-risk customer", on_click=load_example, args=(EXAMPLE_HIGH_RISK,), use_container_width=True
+)
+try_low = low_col.button(
+    "🔵 Try a lower-priority customer", on_click=load_example, args=(EXAMPLE_LOW_RISK,), use_container_width=True
+)
+
 # -----------------------------------------
-# INPUT FORM (LEFT) + RESULT (RIGHT)
+# RESULT (LEFT) + INPUT FORM (RIGHT)
 # -----------------------------------------
-input_col, result_col = st.columns([1.2, 0.8], gap="large")
+# Result first: on phones the columns stack, and it would otherwise sit below all 15 fields
+result_col, input_col = st.columns([0.8, 1.2], gap="large")
 
 with input_col:
-    st.markdown("**Not sure what to enter? Start from an example:**")
-    high_col, low_col = st.columns(2)
-    try_high = high_col.button(
-        "🚨 Try a high-risk customer", on_click=load_example, args=(EXAMPLE_HIGH_RISK,), use_container_width=True
-    )
-    try_low = low_col.button(
-        "🔵 Try a lower-priority customer", on_click=load_example, args=(EXAMPLE_LOW_RISK,), use_container_width=True
-    )
-
     with st.form("prediction_form"):
         st.markdown("### 📋 Customer Profile")
 
@@ -166,10 +167,10 @@ with result_col:
         st.progress(min(max(float(churn_prob), 0.0), 1.0))
 
         st.markdown(f"""
-        <div style="font-size:0.85rem; color:#6B7280; margin-top:8px;">
-            <b>Dynamic Risk Cutoffs:</b><br>
-            • High Risk (Top 10% test decile): &ge; <b>{threshold_high:.3f}</b><br>
-            • Moderate Risk (Top 30% test cutoff): &ge; <b>{threshold_moderate:.3f}</b><br>
+        <div style="font-size:0.85rem; color:#94A3B8; margin-top:8px;">
+            <b>Risk Cutoffs:</b><br>
+            • High Risk (top 10% of test scores): &ge; <b>{threshold_high:.3f}</b><br>
+            • Moderate Risk (top 30% of test scores): &ge; <b>{threshold_moderate:.3f}</b><br>
             The score ranks customers from 0 to 1. It is not a chance of churning.
         </div>
         """, unsafe_allow_html=True)
@@ -187,14 +188,14 @@ with result_col:
             shap_vals = [r["shap_value"] for r in reasons]
             colors = ["#DC2626" if r["direction"] == "increases_risk" else "#059669" for r in reasons]
 
-            fig, ax = plt.subplots(figsize=(7, 3.5))
+            fig, ax = plt.subplots(figsize=(5, 4.5))
             y_pos = np.arange(len(features))[::-1]  # reverse for top-to-bottom
-            ax.barh(y_pos, shap_vals[::-1], color=colors[::-1], edgecolor="white", height=0.6)
+            ax.barh(y_pos, shap_vals[::-1], color=colors[::-1], height=0.6)
             ax.set_yticks(y_pos)
-            ax.set_yticklabels(features[::-1], fontsize=9)
+            ax.set_yticklabels(features[::-1], fontsize=11)
             ax.axvline(x=0, color="#94A3B8", linewidth=0.8)
-            ax.set_xlabel("SHAP value (log-odds impact on risk score)", fontsize=9)
-            ax.set_title("Feature contributions to this prediction", fontsize=10, weight="bold")
+            ax.set_xlabel("SHAP value (log-odds impact on risk score)", fontsize=11)
+            ax.set_title("What moved this score", fontsize=13, weight="bold")
             ax.grid(axis="x", linestyle="--", alpha=0.4)
             plt.tight_layout()
             st.pyplot(fig)
@@ -202,7 +203,7 @@ with result_col:
 
             # Legend
             st.markdown("""
-            <div style="font-size:0.8rem; color:#6B7280; margin-top:4px;">
+            <div style="font-size:0.8rem; color:#94A3B8; margin-top:4px;">
                 <span style="color:#DC2626;">■</span> Increases churn risk &nbsp;&nbsp;
                 <span style="color:#059669;">■</span> Decreases churn risk
             </div>
@@ -230,7 +231,7 @@ with result_col:
         """, unsafe_allow_html=True)
 
     else:
-        st.info("👈 Fill in the customer profile and click **Predict Churn Risk** to generate a risk score.")
+        st.info("Pick an example above, or fill in the customer profile and click **Predict Churn Risk**.")
 
 st.markdown("<br><hr>", unsafe_allow_html=True)
 st.caption("ℹ️ Model: HistGradientBoosting • Evaluated on stratified hold-out test set.")

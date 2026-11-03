@@ -27,7 +27,7 @@ SIMULATED = "Simulated drift (demo)"
 # -----------------------------------------
 st.markdown("""
 <h2 style="margin-bottom:4px;">📡 Data Drift Monitoring</h2>
-<p style="color:#64748b; margin-top:0;">
+<p style="color:#94A3B8; margin-top:0;">
 Are recent customers still similar to the data the model was trained on?
 </p>
 """, unsafe_allow_html=True)

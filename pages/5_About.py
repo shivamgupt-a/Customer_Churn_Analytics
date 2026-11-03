@@ -13,7 +13,7 @@ apply_page_style()
 # -----------------------------------------
 st.markdown("""
 <h2 style="margin-bottom:6px;">About This Project</h2>
-<p style="color:#64748b; margin-top:0;">
+<p style="color:#94A3B8; margin-top:0;">
 End-to-end customer churn analytics portfolio project
 </p>
 """, unsafe_allow_html=True)
@@ -25,35 +25,14 @@ st.markdown("""
 <div class="section-card">
 <h3>🚀 Project Overview</h3>
 <p style="font-size:16px; line-height:1.7;">
-Customer churn is one of the most critical challenges for subscription-based businesses.
-Acquiring new customers is significantly more expensive than retaining existing ones.
-This project focuses on building an <b>end-to-end churn prediction system</b>
-that enables businesses to identify at-risk customers early and take proactive retention actions.
-</p>
-
-<p style="font-size:16px; line-height:1.7;">
-The project integrates <b>data engineering, machine learning, analytics, and modern UI design</b>
-into a single application that supports both operational and strategic decision-making.
+Losing customers costs telecom companies recurring revenue, and keeping a customer is usually cheaper than
+winning a new one. This two-person project predicts which customers are likely to leave, explains each score,
+and checks whether new customers still resemble the data the model learned from.
 </p>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
-
-# -----------------------------------------
-# PROBLEM STATEMENT
-# -----------------------------------------
-st.markdown("""
-<div class="soft-card">
-<h3>🎯 Business Problem</h3>
-<ul>
-<li>High customer churn directly impacts revenue and growth</li>
-<li>Reactive retention strategies are often too late</li>
-<li>Businesses lack visibility into churn drivers</li>
-<li>Decision-makers need interpretable and actionable insights</li>
-</ul>
-</div>
-""", unsafe_allow_html=True)
 
 # -----------------------------------------
 # SOLUTION APPROACH
@@ -73,22 +52,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("---")
-
-# -----------------------------------------
-# KEY FEATURES
-# -----------------------------------------
-st.markdown("""
-<div class="soft-card">
-<h3>✨ Key Features</h3>
-<ul>
-<li><b>Interactive Dashboard:</b> KPIs, churn trends, and customer segmentation</li>
-<li><b>Churn Prediction:</b> Real-time risk scores for individual customers</li>
-<li><b>Business Insights:</b> Clear explanations of churn drivers</li>
-<li><b>Model Transparency:</b> Held-out metrics and SHAP feature importance</li>
-<li><b>Monitoring:</b> Data drift checks with a threshold alert</li>
-</ul>
-</div>
-""", unsafe_allow_html=True)
 
 # -----------------------------------------
 # TECHNOLOGY STACK
